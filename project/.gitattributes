@@ -1,0 +1,4 @@
+*.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript
+*.html linguist-vendored
+*.css linguist-vendored
