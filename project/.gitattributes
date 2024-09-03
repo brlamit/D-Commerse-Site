@@ -2,3 +2,6 @@
 *.jsx linguist-language=JavaScript
 *.html linguist-vendored
 *.css linguist-vendored
+*.sol linguist-language=Solidity
+*.js linguist-detectable=true
+*.jsx linguist-detectable=true
