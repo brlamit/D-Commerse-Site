@@ -84,5 +84,5 @@ This project is not licensed. All rights are reserved.
 
 ## Contact
 
-For questions or feedback, please contact [your-email@example.com](mailto:baralamit881@gmail.com).
+For questions or feedback, please contact(mailto:baralamit881@gmail.com).
 
