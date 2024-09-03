@@ -38,11 +38,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "buyer",
-				"type": "address"
-			},
-			{
 				"internalType": "uint256",
 				"name": "itemId",
 				"type": "uint256"
@@ -56,6 +51,26 @@
 				"internalType": "uint256",
 				"name": "totalPrice",
 				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "userAddress",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "email",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "contact",
+				"type": "string"
 			}
 		],
 		"name": "saveOrder",
@@ -173,6 +188,26 @@
 						"internalType": "uint256",
 						"name": "timestamp",
 						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "userAddress",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "email",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "contact",
+						"type": "string"
 					}
 				],
 				"internalType": "struct Marketplace.Order[]",
@@ -315,6 +350,26 @@
 				"internalType": "uint256",
 				"name": "timestamp",
 				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "userAddress",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "email",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "contact",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",

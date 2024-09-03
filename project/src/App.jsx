@@ -19,7 +19,7 @@ import ABI from './Constants/Token-ABI.json';
 import saleABI from './Constants/Sale-ABI.json'; // Ensure correct path
 
 const contractAddress = '0x4f17a9f92a79414650192385F5E4e717F38B3b27';
-const saleAddress = '0x7E376e6424bf3A6DF489bb386e5c705Ec011ce08';
+const saleAddress = '0xFE0A2A043Eafb6aD49DFae6cFBC52B96018ce731';
 const tokenPriceInEth = '0.0000000001';
 
 const initialState = {
