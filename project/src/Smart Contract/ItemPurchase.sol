@@ -25,6 +25,10 @@ contract Marketplace {
         uint quantity;
         uint totalPrice;
         uint timestamp;
+        string name;
+        string userAddress; // Renamed from 'address' to 'userAddress' to avoid naming conflict
+        string email;
+        string contact;
     }
 
     uint public itemCount = 0;
@@ -72,17 +76,24 @@ contract Marketplace {
         emit ItemCreated(itemCount, _name, _description, _priceInTokens, payable(msg.sender), false);
     }
 
-    function buyItem(uint _id) public {
+    function buyItem(
+        uint _id,
+        uint quantity,
+        string memory name,
+        string memory userAddress,
+        string memory email,
+        string memory contact
+    ) public {
         Item storage item = items[_id];
 
         require(_id > 0 && _id <= itemCount, "Item does not exist");
-        require(token.balanceOf(msg.sender) >= item.priceInTokens, "Not enough tokens to purchase this item");
-        require(token.allowance(msg.sender, address(this)) >= item.priceInTokens, "Token allowance too low");
+        require(token.balanceOf(msg.sender) >= item.priceInTokens * quantity, "Not enough tokens to purchase this item");
+        require(token.allowance(msg.sender, address(this)) >= item.priceInTokens * quantity, "Token allowance too low");
         require(!item.sold, "Item already sold");
         require(item.seller != msg.sender, "Seller cannot buy their own item");
 
         // Transfer tokens from buyer to seller
-        require(token.transferFrom(msg.sender, item.seller, item.priceInTokens), "Token transfer failed");
+        require(token.transferFrom(msg.sender, item.seller, item.priceInTokens * quantity), "Token transfer failed");
 
         item.sold = true;
 
@@ -90,27 +101,45 @@ contract Marketplace {
         transactionHistory[msg.sender].push(Transaction({
             id: _id,
             transactionType: "Item Purchase",
-            amount: item.priceInTokens,
+            amount: item.priceInTokens * quantity,
             timestamp: block.timestamp
         }));
         transactionHistory[item.seller].push(Transaction({
             id: _id,
             transactionType: "Item Sale",
-            amount: item.priceInTokens,
+            amount: item.priceInTokens * quantity,
             timestamp: block.timestamp
         }));
 
-        emit ItemPurchased(_id, payable(msg.sender), item.priceInTokens);
+        // Save the order details
+        saveOrder(_id, quantity, item.priceInTokens * quantity, name, userAddress, email, contact);
+
+        emit ItemPurchased(_id, payable(msg.sender), item.priceInTokens * quantity);
     }
 
-    function saveOrder(address buyer, uint itemId, uint quantity, uint totalPrice) public {
-        require(msg.sender == buyer, "Only the buyer can save the order");
+    // Changed from internal to public
+    function saveOrder(
+        uint itemId,
+        uint quantity,
+        uint totalPrice,
+        string memory name,
+        string memory userAddress, // Renamed from 'address' to 'userAddress' to avoid naming conflict
+        string memory email,
+        string memory contact
+    ) public {
+        require(items[itemId].id != 0, "Item does not exist");
+        require(!items[itemId].sold, "Item already sold");
+        require(totalPrice >= items[itemId].priceInTokens * quantity, "Incorrect total price");
 
-        orders[buyer].push(Order({
+        orders[msg.sender].push(Order({
             itemId: itemId,
             quantity: quantity,
             totalPrice: totalPrice,
-            timestamp: block.timestamp
+            timestamp: block.timestamp,
+            name: name,
+            userAddress: userAddress,
+            email: email,
+            contact: contact
         }));
     }
 

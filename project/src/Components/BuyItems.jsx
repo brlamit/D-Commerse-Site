@@ -171,34 +171,17 @@ const BuyItems = ({ contract, account, addToCart, buyItem, setLoading }) => {
       totalPrice: name === "quantity" ? selectedItem.price * value : prevDetails.totalPrice,
     }));
   };
-
   const handleConfirmBuy = async () => {
     setLoadingState(true);
   
     try {
       if (contract && account) {
-        const selectedItemId = selectedItem.id; // Make sure `selectedItem` has `id`
+        const { id, name, price } = selectedItem;
   
         // Perform the purchase
-        await buyItem(selectedItemId, account);
-
-         // Save the order details to the smart contract
-      await contract.methods
-      .saveOrder(account, selectedItem.name, buyItemDetails.quantity, buyItemDetails.totalPrice)
-      .send({ from: account });
-
+        await buyItem(id, buyItemDetails.quantity, name, account, buyItemDetails.email, buyItemDetails.contact);
   
-        // Save transaction details if needed
-        const transactionDetails = {
-          from: account,
-          to: state.saleContract._address,
-          transactionHash: "transaction_hash_here", // Replace with actual transaction hash
-          blockNumber: "block_number_here", // Replace with actual block number
-        };
-  
-        saveTransaction(transactionDetails);
-  
-        setCartMessage(`Successfully purchased ${selectedItem.name}!`);
+        // setCartMessage(`Successfully purchased ${selectedItem.name}!`);
       } else {
         setCartMessage("Contract or account not found.");
       }
@@ -211,7 +194,6 @@ const BuyItems = ({ contract, account, addToCart, buyItem, setLoading }) => {
     }
   };
   
-
   return (
     <section className="bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 min-h-screen flex flex-col items-center p-8">
       {loadingState && <Loader />}

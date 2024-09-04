@@ -1,5 +1,3 @@
-// App.js
-
 import React, { useReducer, useEffect } from 'react';
 import Web3 from 'web3';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -18,8 +16,8 @@ import Loader from './Components/Loader';
 import ABI from './Constants/Token-ABI.json';
 import saleABI from './Constants/Sale-ABI.json'; // Ensure correct path
 
-const contractAddress = '0x4f17a9f92a79414650192385F5E4e717F38B3b27';
-const saleAddress = '0xFE0A2A043Eafb6aD49DFae6cFBC52B96018ce731';
+const contractAddress = '0xD7De1bCcD32b38907851821535308057F718eb32';
+const saleAddress = '0xeB87c4fBC1f755af7aaDE94e6a90e32df1110931';
 const tokenPriceInEth = '0.0000000001';
 
 const initialState = {
@@ -31,6 +29,7 @@ const initialState = {
   tokensToBuy: 0,
   cartItems: [],
   orders: [],
+  transactions: [],
   loading: false,
 };
 
@@ -56,6 +55,9 @@ function reducer(state, action) {
       return { ...state, cartItems: state.cartItems.filter(item => item.id !== action.payload) };
     case 'SET_ORDERS':
       return { ...state, orders: action.payload };
+      case 'SET_TRANSACTIONS':
+      return { ...state, transactions: Array.isArray(action.payload) ? action.payload : [] };
+    // other cases...
     default:
       return state;
   }
@@ -106,51 +108,55 @@ function App() {
   };
 
   const buyTokens = async () => {
-    dispatch({ type: 'SET_LOADING', payload: true });
     if (state.tokenContract && state.account) {
       try {
         const valueInWei = Web3.utils.toWei(
           (BigInt(state.tokensToBuy) * BigInt(Web3.utils.toWei(tokenPriceInEth.toString(), 'ether'))).toString(),
           'wei'
         );
-        await state.tokenContract.methods.buyTokens().send({
+  
+        const receipt = await state.tokenContract.methods.buyTokens().send({
           from: state.account,
           value: valueInWei,
         });
-        await getTokenBalance(state.tokenContract, state.account);
+  
+        return receipt; // Return the transaction receipt
       } catch (error) {
-        if (error.message.includes('User denied transaction signature')) {
-          alert('Transaction rejected by user.');
-        } else {
-          console.error('Error buying tokens:', error);
-          alert(`Failed to buy tokens: ${error.message}`);
-        }
-      } finally {
-        dispatch({ type: 'SET_LOADING', payload: false });
+        console.error('Error buying tokens:', error);
+        throw error; // Re-throw error to be handled in the component
       }
     } else {
       console.log('Contract or account not available');
-      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
-  const buyItem = async (itemId, account) => {
-    if (state.saleContract && account) {
+  const buyItem = async (itemId, quantity, name, userAddress, email, contact) => {
+    if (state.saleContract && state.account) {
       try {
-        await state.saleContract.methods.buyItem(itemId).send({
-          from: account,
-        });
+        console.log('Contract Methods:', state.saleContract.methods);
+        
+        // Call `buyItem` to buy the item
+        const itemPriceInTokens = await state.saleContract.methods.items(itemId).call();
+        const totalPrice = BigInt(itemPriceInTokens.priceInTokens) * BigInt(quantity);
   
-        // Update token balance after purchase if necessary
-        await getTokenBalance(state.tokenContract, account);
+        await state.saleContract.methods.buyItem(itemId, quantity, name, userAddress, email, contact).send({
+          from: state.account,
+        });
+        
+        // Optionally save the order details to the smart contract
+        await state.saleContract.methods.saveOrder(
+          itemId, quantity, totalPrice.toString(), name, userAddress, email, contact
+        ).send({ from: state.account });
+  
+        console.log('Item purchased successfully');
       } catch (error) {
-        console.error("Error buying item:", error);
-        alert(`Failed to buy item: ${error.message}`);
+        console.error('Error buying item:', error);
       }
     } else {
-      console.log("Sale contract or account not available");
+      console.log('Contract or account not available');
     }
   };
   
+
   
 
   const getTokenBalance = async (contract, account) => {
@@ -164,6 +170,16 @@ function App() {
       }
     }
   };
+  const saveTransaction = (transaction) => {
+    if (Array.isArray(state.transactions)) {
+      dispatch({ type: 'SET_TRANSACTIONS', payload: [...state.transactions, transaction] });
+    } else {
+      console.error('State.transactions is not an array');
+      // Optionally initialize transactions as an array
+      dispatch({ type: 'SET_TRANSACTIONS', payload: [transaction] });
+    }
+  };
+  
 
   const disconnectWallet = () => {
     dispatch({ type: 'SET_ACCOUNT', payload: '' });
@@ -192,6 +208,7 @@ function App() {
     dispatch({ type: 'SET_LOADING', payload: false });
   };
 
+  
   return (
     <Router>
       <div className="min-h-screen bg-gray-700 text-white flex flex-col justify-between">
@@ -214,23 +231,23 @@ function App() {
                   setTokensToBuy={(value) => dispatch({ type: 'SET_TOKENS_TO_BUY', payload: value })}
                   buyTokens={buyTokens}
                   setLoading={(value) => dispatch({ type: 'SET_LOADING', payload: value })}
+                  saveTransaction={saveTransaction} // Pass it here
                 />
               }
             />
-           <Route
-                path="/buy-items"
-                element={
-                  <BuyItems
-                    contract={state.tokenContract}
-                    saleContract={state.saleContract}  // Pass saleContract here
-                    account={state.account}
-                    addToCart={addToCart}
-                    buyItem={buyItem}
-                    setLoading={(value) => dispatch({ type: 'SET_LOADING', payload: value })}
-                  />
-                }
-              />
-
+            <Route
+              path="/buy-items"
+              element={
+                <BuyItems
+                  contract={state.tokenContract}
+                  saleContract={state.saleContract}
+                  account={state.account}
+                  addToCart={addToCart}
+                  buyItem={buyItem}
+                  setLoading={(value) => dispatch({ type: 'SET_LOADING', payload: value })}
+                />
+              }
+            />
             <Route
               path="/cart"
               element={
@@ -245,8 +262,8 @@ function App() {
               path="/transactions"
               element={
                 <Transactions
+                  contract={state.tokenContract}
                   account={state.account}
-                  // Add other necessary props if needed
                 />
               }
             />

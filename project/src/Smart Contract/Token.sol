@@ -5,15 +5,15 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Combined Token and TokenSale Contract
-contract EcommerseToken is ERC20("WALLETTOKEN", "WTK"), Ownable(msg.sender)  {
+contract EcommerseToken is ERC20("WALLETTOKEN", "WTK"), Ownable(msg.sender) {
     uint256 public rate = 1000; // Number of tokens per ETH
 
-    event TokensPurchased(address indexed buyer, uint256 amount);
+    event TokensPurchased(address indexed buyer, uint256 amount, uint256 ethSpent, uint256 rate, uint256 timestamp);
     event FundsWithdrawn(address indexed owner, uint256 amount);
     event TokensWithdrawn(address indexed owner, uint256 amount);
     event RateUpdated(uint256 newRate);
 
-    constructor()  {
+    constructor() {
         _mint(msg.sender, 100000 * 10 ** 18); // Mint initial supply to contract owner
     }
 
@@ -24,7 +24,8 @@ contract EcommerseToken is ERC20("WALLETTOKEN", "WTK"), Ownable(msg.sender)  {
         // Transfer tokens from the owner (initial supply holder) to the buyer
         _transfer(owner(), msg.sender, tokenAmount);
 
-        emit TokensPurchased(msg.sender, tokenAmount);
+        // Emit an event with more details about the purchase
+        emit TokensPurchased(msg.sender, tokenAmount, msg.value, rate, block.timestamp);
     }
 
     function withdrawFunds() public onlyOwner {

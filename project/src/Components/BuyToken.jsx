@@ -1,20 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const BuyToken = ({ tokensToBuy, setTokensToBuy, buyTokens, setLoading, saveTransaction }) => {
+  const [error, setError] = useState(null);
+
   const handleBuyTokens = async () => {
+    // Check if tokensToBuy is valid
+    if (tokensToBuy <= 0) {
+      setError('Please enter a valid token amount greater than 0.');
+      return;
+    }
+
     try {
       setLoading(true);
-      await buyTokens();
+      const receipt = await buyTokens();
+
+      if (!receipt || !receipt.transactionHash) {
+        throw new Error('Transaction receipt is invalid or missing transactionHash');
+      }
+
       const transactionDetails = {
-        from: "user_address_here", // Replace with actual address
-        to: "contract_address_here", // Replace with actual contract address
+        from: receipt.from, // Replace with actual address if needed
+        to: receipt.to, // Replace with actual contract address if needed
         value: tokensToBuy,
-        transactionHash: "transaction_hash_here", // Replace with actual transaction hash
-        blockNumber: "block_number_here", // Replace with actual block number
+        transactionHash: receipt.transactionHash,
+        blockNumber: receipt.blockNumber
       };
+
       saveTransaction(transactionDetails);
+      setError(''); // Clear error message
+      alert('Tokens purchased successfully!');
     } catch (error) {
-      console.error('Error buying tokens:', error);
+      setError('Error buying tokens: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -35,8 +51,9 @@ const BuyToken = ({ tokensToBuy, setTokensToBuy, buyTokens, setLoading, saveTran
         onClick={handleBuyTokens}
         className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-bold py-3 px-6 rounded-full w-full text-center shadow-lg transform transition-all duration-300 hover:scale-105"
       >
-        Buy Tokens
+        {setLoading ? 'Buy Token' : 'Buy Tokens'}
       </button>
+      {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
   );
 };
