@@ -7,6 +7,16 @@ import buyImg from '../assets/sales.gif'; // Correct path for the image
 const Home = ({ contract, account }) => {
   const navigate = useNavigate();
 
+    // Inject Google AdSense Script
+    useEffect(() => {
+      const script = document.createElement('script');
+      script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8523398566125571";
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      document.body.appendChild(script);
+    }, []); // Empty dependency array ensures this runs only once when the component mounts
+  
+
   const goToBuyToken = () => {
     navigate('/buy-token');
   };
