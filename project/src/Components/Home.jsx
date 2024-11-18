@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react'; // Added useEffect here
 import { useNavigate } from 'react-router-dom';
 import tokenImage from '../assets/token.gif'; // Correct path for the image
 import cartImg from '../assets/cart.gif'; // Correct path for the image
