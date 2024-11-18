@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // Added useEffect here
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import tokenImage from '../assets/token.gif'; // Correct path for the image
 import cartImg from '../assets/cart.gif'; // Correct path for the image
@@ -6,15 +6,6 @@ import buyImg from '../assets/sales.gif'; // Correct path for the image
 
 const Home = ({ contract, account }) => {
   const navigate = useNavigate();
-
-    // Inject Google AdSense Script
-    useEffect(() => {
-      const script = document.createElement('script');
-      script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8523398566125571";
-      script.async = true;
-      script.crossOrigin = "anonymous";
-      document.body.appendChild(script);
-    }, []); // Empty dependency array ensures this runs only once when the component mounts
   
 
   const goToBuyToken = () => {
