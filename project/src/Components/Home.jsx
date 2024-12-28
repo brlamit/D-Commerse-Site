@@ -6,6 +6,7 @@ import buyImg from '../assets/sales.gif'; // Correct path for the image
 
 const Home = ({ contract, account }) => {
   const navigate = useNavigate();
+  
 
   const goToBuyToken = () => {
     navigate('/buy-token');
