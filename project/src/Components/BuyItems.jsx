@@ -173,15 +173,13 @@ const BuyItems = ({ contract, account, addToCart, buyItem, setLoading }) => {
   };
   const handleConfirmBuy = async () => {
     setLoadingState(true);
-  
     try {
       if (contract && account) {
         const { id, name, price } = selectedItem;
   
         // Perform the purchase
         await buyItem(id, buyItemDetails.quantity, name, account, buyItemDetails.email, buyItemDetails.contact);
-  
-        // setCartMessage(`Successfully purchased ${selectedItem.name}!`);
+        setCartMessage(`Successfully purchased ${selectedItem.name}!`);
       } else {
         setCartMessage("Contract or account not found.");
       }

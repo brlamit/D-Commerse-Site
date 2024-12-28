@@ -54,7 +54,8 @@ contract Marketplace {
     event ItemPurchased(
         uint id,
         address payable buyer,
-        uint priceInTokens
+        uint priceInTokens,
+        uint quantity
     );
 
     constructor(address _tokenAddress) {
@@ -69,6 +70,8 @@ contract Marketplace {
 
     function createItem(string memory _name, string memory _description, uint _priceInTokens) public onlyOwner {
         require(_priceInTokens > 0, "Price must be greater than zero");
+        require(bytes(_name).length > 0, "Name cannot be empty");
+        require(bytes(_description).length > 0, "Description cannot be empty");
 
         itemCount++;
         items[itemCount] = Item(itemCount, _name, _description, _priceInTokens, payable(msg.sender), false);
@@ -91,6 +94,11 @@ contract Marketplace {
         require(token.allowance(msg.sender, address(this)) >= item.priceInTokens * quantity, "Token allowance too low");
         require(!item.sold, "Item already sold");
         require(item.seller != msg.sender, "Seller cannot buy their own item");
+        require(quantity > 0, "Quantity must be greater than zero");
+        require(bytes(name).length > 0, "Name cannot be empty");
+        require(bytes(userAddress).length > 0, "User address cannot be empty");
+        require(bytes(email).length > 0, "Email cannot be empty");
+        require(bytes(contact).length > 0, "Contact cannot be empty");
 
         // Transfer tokens from buyer to seller
         require(token.transferFrom(msg.sender, item.seller, item.priceInTokens * quantity), "Token transfer failed");
@@ -114,10 +122,9 @@ contract Marketplace {
         // Save the order details
         saveOrder(_id, quantity, item.priceInTokens * quantity, name, userAddress, email, contact);
 
-        emit ItemPurchased(_id, payable(msg.sender), item.priceInTokens * quantity);
+        emit ItemPurchased(_id, payable(msg.sender), item.priceInTokens * quantity, quantity);
     }
 
-    // Changed from internal to public
     function saveOrder(
         uint itemId,
         uint quantity,
@@ -126,11 +133,7 @@ contract Marketplace {
         string memory userAddress, // Renamed from 'address' to 'userAddress' to avoid naming conflict
         string memory email,
         string memory contact
-    ) public {
-        require(items[itemId].id != 0, "Item does not exist");
-        require(!items[itemId].sold, "Item already sold");
-        require(totalPrice >= items[itemId].priceInTokens * quantity, "Incorrect total price");
-
+    ) internal {
         orders[msg.sender].push(Order({
             itemId: itemId,
             quantity: quantity,
